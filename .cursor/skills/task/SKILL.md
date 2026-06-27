@@ -44,16 +44,16 @@ The issue is the plan to stress-test.
 
 ## Phase 2 — Update the issue
 
-Write the grilled result back to GitHub. Match the repo issue template:
+Write the grilled result back to GitHub. Use `##` section headings:
 
 ```md
-**Context**:
+## Context
 
-**Description**:
+## Description
 
-**Acceptance Criteria**:
+## Acceptance Criteria
 
-**Additional Notes**:
+## Additional Notes
 ```
 
 - Replace the issue body (not just a comment) when the original was sparse or wrong.
