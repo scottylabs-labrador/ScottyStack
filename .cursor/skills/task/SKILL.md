@@ -2,9 +2,9 @@
 name: task
 description: >-
   End-to-end GitHub issue workflow: grill requirements, update the issue,
-  implement in a git worktree, open a PR, and resolve AI review comments until
-  merge-ready. Use when the user invokes /task with a GitHub issue URL or
-  number.
+  implement in a git worktree, open a PR, and resolve AI review comments and CI
+  failures until merge-ready. Use when the user invokes /task with a GitHub issue
+  URL or number.
 disable-model-invocation: true
 ---
 
@@ -119,10 +119,11 @@ git worktree remove "$WORKTREE"
 git branch -d "$BRANCH"   # or -D if needed
 ```
 
-## Phase 4 — Resolve AI review comments
+## Phase 4 — Resolve AI review comments and CI
 
 Loop until the PR is merge-ready. Borrow triage rules from the babysit skill:
-validate each comment; only fix valid issues; explain when you disagree.
+validate each comment; only fix valid issues; explain when you disagree. Fix CI
+failures caused by this PR's changes and re-run until every check passes.
 
 ### What counts as "AI review"
 
@@ -141,7 +142,9 @@ Task Progress:
 - [ ] Fix valid issues in the worktree
 - [ ] Push fixes
 - [ ] Re-check until no unresolved AI comments remain
-- [ ] Confirm CI is green
+- [ ] Fetch CI status for the PR
+- [ ] Fix failing checks caused by this PR
+- [ ] Push CI fixes and re-watch until all checks pass
 ```
 
 1. Fetch unresolved threads:
@@ -162,13 +165,32 @@ Task Progress:
    Poll with `gh pr view` or ask the user to ping when review completes if
    the bot is slow.
 
-5. Exit the loop when:
+5. **CI checks** — after each push, confirm every required check passes:
+
+   ```bash
+   gh pr checks <url> --watch
+   gh pr view <url> --json statusCheckRollup,mergeable,mergeStateStatus
+   ```
+
+   Fix failures caused by this PR's changes. Run the same checks locally
+   before pushing when possible (`bun run build:api`, `bunx turbo run quality`,
+   etc.).
+
+   CI rules:
+
+   - Never change workflows or checks just to make failures pass.
+   - Never make unrelated code changes to fix CI.
+   - If a failure seems unrelated, merge latest `main` into the branch first —
+     another PR may have fixed it.
+   - If a fix would require out-of-scope changes, stop and report back.
+
+6. Exit the loop when **all** of these are true:
 
    - All AI review threads are resolved or replied to
-   - CI checks are green
+   - Every CI check on the PR is green
    - Acceptance criteria from Phase 2 are met
 
-Report the PR URL and a short summary of what was done.
+Report the PR URL, CI status, and a short summary of what was done.
 
 ## Examples
 
