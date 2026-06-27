@@ -2,6 +2,9 @@
   // Scan all Markdown files
   "globs": ["**/*.md"],
 
+  // Vendor Cursor skills (upstream markdown style)
+  "ignores": [".cursor/skills/**"],
+
   // Skip gitignore file
   "gitignore": true,
 
