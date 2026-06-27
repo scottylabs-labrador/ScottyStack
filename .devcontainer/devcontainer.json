@@ -3,6 +3,12 @@
   "dockerComposeFile": "./docker-compose.yml",
   "service": "dev",
   "workspaceFolder": "/workspace",
+  "forwardPorts": [3000, 80, "postgres:5432"],
+  "portsAttributes": {
+    "3000": { "label": "web", "onAutoForward": "notify" },
+    "80": { "label": "api", "onAutoForward": "notify" },
+    "5432": { "label": "postgres", "onAutoForward": "silent" }
+  },
   "postCreateCommand": "./.devcontainer/post-create.sh",
   "features": {
     "git": {
