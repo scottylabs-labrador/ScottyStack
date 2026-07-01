@@ -5,16 +5,10 @@ WORKDIR /app
 # Build stage
 FROM base AS builder
 
-# Railway injects RAILWAY_SERVICE_ID as a build arg; BuildKit cache mounts
-# must be prefixed with `s/<service-id>-` for Railway's builder to persist
-# them across builds. https://docs.railway.com/builds/dockerfiles#cache-mounts
-ARG RAILWAY_SERVICE_ID
-
 # Copy dependency manifests first so install is cached when only source changes
 COPY package.json bun.lock ./
 COPY --parents apps/*/package.json packages/*/package.json ./
-RUN --mount=type=cache,id=s/${RAILWAY_SERVICE_ID}-scottystack-bun,target=/root/.bun/install/cache \
-  bun ci
+RUN bun ci
 
 # Environment variables
 ARG VITE_SERVER_URL
