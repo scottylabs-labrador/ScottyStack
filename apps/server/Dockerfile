@@ -4,12 +4,17 @@ WORKDIR /app
 
 # Build stage
 FROM base AS builder
-WORKDIR /app
+
+# Railway injects RAILWAY_SERVICE_ID as a build arg; BuildKit cache mounts
+# must be prefixed with `s/<service-id>-` for Railway's builder to persist
+# them across builds. Locally this defaults to "local".
+ARG RAILWAY_SERVICE_ID=local
 
 # Copy dependency manifests first so install is cached when only source changes
 COPY package.json bun.lock ./
 COPY --parents apps/*/package.json packages/*/package.json ./
-RUN bun ci
+RUN --mount=type=cache,id=s/${RAILWAY_SERVICE_ID}-scottystack-bun,target=/root/.bun/install/cache \
+  bun ci
 
 # Build the server
 COPY . .
