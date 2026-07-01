@@ -7,8 +7,8 @@ FROM base AS builder
 
 # Railway injects RAILWAY_SERVICE_ID as a build arg; BuildKit cache mounts
 # must be prefixed with `s/<service-id>-` for Railway's builder to persist
-# them across builds. Locally this defaults to "local".
-ARG RAILWAY_SERVICE_ID=local
+# them across builds. https://docs.railway.com/builds/dockerfiles#cache-mounts
+ARG RAILWAY_SERVICE_ID
 
 # Copy dependency manifests first so install is cached when only source changes
 COPY package.json bun.lock ./
