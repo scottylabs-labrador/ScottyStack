@@ -6,11 +6,20 @@ WORKDIR /app
 FROM base AS builder
 WORKDIR /app
 
-# Copy everything
-COPY . .
+# Copy dependency manifests first so install is cached when only source changes
+COPY package.json bun.lock ./
+COPY apps/server/package.json ./apps/server/
+COPY apps/web/package.json ./apps/web/
+COPY packages/access-control/package.json ./packages/access-control/
+COPY packages/common/package.json ./packages/common/
 
-# Install deps from bun.lock
-RUN bun install --frozen-lockfile
+RUN bun ci
+
+# Copy source for server and its workspace dependencies
+COPY turbo.json ./
+COPY apps/server ./apps/server
+COPY packages/access-control ./packages/access-control
+COPY packages/common ./packages/common
 
 # Build the project
 RUN bun run build --filter=@scottystack/server...
