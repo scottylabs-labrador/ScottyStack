@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { DashboardUsersTableSkeleton } from "@/components/dashboard/DashboardUsersTableSkeleton";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -34,11 +35,7 @@ function DashboardPage() {
   });
 
   if (sessionPending) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-4 text-sm text-muted-foreground">
-        Loading...
-      </div>
-    );
+    return <DashboardUsersTableSkeleton />;
   }
 
   if (!auth?.user) {
@@ -59,11 +56,7 @@ function DashboardPage() {
   }
 
   if (usersLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-4 text-sm text-muted-foreground">
-        Loading users...
-      </div>
-    );
+    return <DashboardUsersTableSkeleton />;
   }
 
   if (usersError) {
