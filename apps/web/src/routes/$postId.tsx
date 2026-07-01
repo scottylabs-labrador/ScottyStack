@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { PostDetailSkeleton } from "@/components/post/PostDetailSkeleton";
 import { PostEditForm } from "@/components/post/PostEditForm";
 import { PostHeader } from "@/components/post/PostHeader";
 import { ReplyForm } from "@/components/post/ReplyForm";
@@ -17,11 +18,7 @@ export const Route = createFileRoute("/$postId")({
       }),
     );
   },
-  pendingComponent: () => (
-    <div className="flex flex-1 items-center justify-center p-4 text-sm text-muted-foreground">
-      Loading...
-    </div>
-  ),
+  pendingComponent: PostDetailSkeleton,
   errorComponent: ({ error }) => (
     <div className="p-6 text-sm text-destructive">
       Error: {error ? String(error) : "Failed to load post"}

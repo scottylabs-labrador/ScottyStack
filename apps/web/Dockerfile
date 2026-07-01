@@ -4,20 +4,19 @@ WORKDIR /app
 
 # Build stage
 FROM base AS builder
-WORKDIR /app
 
-# Copy everything
-COPY . .
-
-# Install deps from bun.lock
-RUN bun install --frozen-lockfile
+# Copy dependency manifests first so install is cached when only source changes
+COPY package.json bun.lock ./
+COPY --parents apps/*/package.json packages/*/package.json ./
+RUN bun ci
 
 # Environment variables
 ARG VITE_SERVER_URL
 ARG VITE_PUBLIC_POSTHOG_HOST
 ARG VITE_PUBLIC_POSTHOG_KEY
 
-# Build the project
+# Build the web app
+COPY . .
 RUN bun run build --filter=@scottystack/web...
 
 ################################################################################

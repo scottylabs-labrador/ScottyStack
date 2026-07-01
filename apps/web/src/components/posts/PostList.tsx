@@ -2,6 +2,7 @@ import { Link, useParams } from "@tanstack/react-router";
 import { Pencil } from "lucide-react";
 import InfiniteScroll from "react-infinite-scroll-component";
 
+import { PostListSkeleton } from "@/components/posts/PostListSkeleton";
 import { buttonVariants } from "@/components/ui/button";
 import { $api } from "@/lib/apiClient";
 import { useSession } from "@/lib/authClient";
@@ -53,11 +54,7 @@ export function PostList() {
   const posts = data?.pages.flatMap((p) => p.posts) ?? [];
 
   if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-4 text-sm text-muted-foreground">
-        Loading posts...
-      </div>
-    );
+    return <PostListSkeleton />;
   }
 
   if (isError) {
@@ -96,9 +93,11 @@ export function PostList() {
             next={fetchNextPage}
             hasMore={hasNextPage ?? false}
             loader={
-              <div className="p-4 text-center text-sm text-muted-foreground">
-                {isFetchingNextPage ? "Loading more..." : null}
-              </div>
+              isFetchingNextPage ? (
+                <div className="p-4">
+                  <PostListSkeleton count={2} />
+                </div>
+              ) : null
             }
             scrollableTarget="post-list-scroll"
           >

@@ -4,15 +4,14 @@ WORKDIR /app
 
 # Build stage
 FROM base AS builder
-WORKDIR /app
 
-# Copy everything
+# Copy dependency manifests first so install is cached when only source changes
+COPY package.json bun.lock ./
+COPY --parents apps/*/package.json packages/*/package.json ./
+RUN bun ci
+
+# Build the server
 COPY . .
-
-# Install deps from bun.lock
-RUN bun install --frozen-lockfile
-
-# Build the project
 RUN bun run build --filter=@scottystack/server...
 
 # Final runtime image
