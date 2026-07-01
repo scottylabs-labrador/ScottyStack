@@ -1,9 +1,11 @@
+import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { toast } from "react-toastify";
 
 import { Button } from "@/components/ui/button";
 import { $api } from "@/lib/apiClient";
+import { FieldError } from "@/lib/FieldError";
+import { postFormSchema } from "@/lib/formSchemas";
 
 interface PostEditFormProps {
   post: { id: string; title: string; content: string; anonymous?: boolean };
@@ -13,9 +15,6 @@ interface PostEditFormProps {
 
 export function PostEditForm({ post, onCancel, onSuccess }: PostEditFormProps) {
   const queryClient = useQueryClient();
-  const [title, setTitle] = useState(post.title);
-  const [content, setContent] = useState(post.content);
-  const [anonymous, setAnonymous] = useState(post.anonymous ?? false);
 
   const updatePost = $api.useMutation("patch", "/posts/{postId}", {
     onSuccess: async () => {
@@ -31,48 +30,93 @@ export function PostEditForm({ post, onCancel, onSuccess }: PostEditFormProps) {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
-    updatePost.mutate({
-      params: { path: { postId: post.id } },
-      body: { title: title.trim(), content: content.trim(), anonymous },
-    });
-  };
+  const form = useForm({
+    defaultValues: {
+      title: post.title,
+      content: post.content,
+      anonymous: post.anonymous ?? false,
+    },
+    validators: {
+      onChange: postFormSchema,
+    },
+    onSubmit: async ({ value }) => {
+      updatePost.mutate({
+        params: { path: { postId: post.id } },
+        body: {
+          title: value.title,
+          content: value.content,
+          anonymous: value.anonymous,
+        },
+      });
+    },
+  });
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-xl font-semibold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        required
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        void form.handleSubmit();
+      }}
+      className="space-y-4"
+    >
+      <form.Field
+        name="title"
+        children={(field) => (
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xl font-semibold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <FieldError field={field} />
+          </div>
+        )}
       />
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        rows={8}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        required
+      <form.Field
+        name="content"
+        children={(field) => (
+          <div className="space-y-2">
+            <textarea
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              rows={8}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <FieldError field={field} />
+          </div>
+        )}
       />
       <div className="flex items-center gap-4">
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={anonymous}
-            onChange={(e) => setAnonymous(e.target.checked)}
-            className="rounded border-input"
-          />
-          Post anonymously
-        </label>
+        <form.Field
+          name="anonymous"
+          children={(field) => (
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.checked)}
+                className="rounded border-input"
+              />
+              Post anonymously
+            </label>
+          )}
+        />
         <div className="flex gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit" disabled={updatePost.isPending}>
-            {updatePost.isPending ? "Saving..." : "Save"}
-          </Button>
+          <form.Subscribe
+            selector={(state) => state.isSubmitting}
+            children={(isSubmitting) => (
+              <Button type="submit" disabled={isSubmitting || updatePost.isPending}>
+                {updatePost.isPending ? "Saving..." : "Save"}
+              </Button>
+            )}
+          />
         </div>
       </div>
     </form>

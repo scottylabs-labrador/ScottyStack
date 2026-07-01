@@ -1,11 +1,13 @@
 import type { User } from "@scottystack/access-control";
 import { hasPermission } from "@scottystack/access-control";
+import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { toast } from "react-toastify";
 
 import { Button } from "@/components/ui/button";
 import { $api } from "@/lib/apiClient";
+import { FieldError } from "@/lib/FieldError";
+import { replyFormSchema } from "@/lib/formSchemas";
 
 interface ReplyItemProps {
   reply: {
@@ -24,20 +26,14 @@ interface ReplyItemProps {
   onEndEdit: () => void;
 }
 
-export function ReplyItem({
-  reply,
-  user,
-  postId,
-  isEditing,
-  onStartEdit,
-  onEndEdit,
-}: ReplyItemProps) {
-  const queryClient = useQueryClient();
-  const [editContent, setEditContent] = useState(reply.content);
-  const [editAnonymous, setEditAnonymous] = useState(reply.anonymous ?? false);
+interface ReplyEditFormProps {
+  reply: ReplyItemProps["reply"];
+  postId: string;
+  onEndEdit: () => void;
+}
 
-  const canUpdate = hasPermission(user, "replies", "update", reply);
-  const canDelete = hasPermission(user, "replies", "delete", reply);
+function ReplyEditForm({ reply, postId, onEndEdit }: ReplyEditFormProps) {
+  const queryClient = useQueryClient();
 
   const updateReply = $api.useMutation("patch", "/posts/{postId}/replies/{replyId}", {
     onSuccess: () => {
@@ -51,6 +47,100 @@ export function ReplyItem({
     },
   });
 
+  const form = useForm({
+    defaultValues: {
+      content: reply.content,
+      anonymous: reply.anonymous ?? false,
+    },
+    validators: {
+      onChange: replyFormSchema,
+    },
+    onSubmit: async ({ value }) => {
+      updateReply.mutate({
+        params: { path: { postId, replyId: reply.id } },
+        body: { content: value.content, anonymous: value.anonymous },
+      });
+    },
+  });
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        void form.handleSubmit();
+      }}
+      className="rounded-lg border p-4"
+    >
+      <form.Field
+        name="content"
+        children={(field) => (
+          <div className="space-y-2">
+            <textarea
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              rows={4}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <FieldError field={field} />
+          </div>
+        )}
+      />
+      <div className="mt-2 flex items-center gap-4">
+        <form.Field
+          name="anonymous"
+          children={(field) => (
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.checked)}
+                className="rounded border-input"
+              />
+              Post anonymously
+            </label>
+          )}
+        />
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              form.reset();
+              onEndEdit();
+            }}
+          >
+            Cancel
+          </Button>
+          <form.Subscribe
+            selector={(state) => state.isSubmitting}
+            children={(isSubmitting) => (
+              <Button type="submit" size="sm" disabled={isSubmitting || updateReply.isPending}>
+                {updateReply.isPending ? "Saving..." : "Save"}
+              </Button>
+            )}
+          />
+        </div>
+      </div>
+    </form>
+  );
+}
+
+export function ReplyItem({
+  reply,
+  user,
+  postId,
+  isEditing,
+  onStartEdit,
+  onEndEdit,
+}: ReplyItemProps) {
+  const queryClient = useQueryClient();
+
+  const canUpdate = hasPermission(user, "replies", "update", reply);
+  const canDelete = hasPermission(user, "replies", "delete", reply);
+
   const deleteReply = $api.useMutation("delete", "/posts/{postId}/replies/{replyId}", {
     onSuccess: () => {
       void queryClient.invalidateQueries({
@@ -62,14 +152,6 @@ export function ReplyItem({
       onEndEdit();
     },
   });
-
-  const handleSave = () => {
-    if (!editContent.trim()) return;
-    updateReply.mutate({
-      params: { path: { postId, replyId: reply.id } },
-      body: { content: editContent.trim(), anonymous: editAnonymous },
-    });
-  };
 
   const handleDelete = () => {
     if (confirm("Delete this reply?")) {
@@ -87,44 +169,7 @@ export function ReplyItem({
   });
 
   if (isEditing) {
-    return (
-      <div className="rounded-lg border p-4">
-        <textarea
-          value={editContent}
-          onChange={(e) => setEditContent(e.target.value)}
-          rows={4}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        <div className="mt-2 flex items-center gap-4">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={editAnonymous}
-              onChange={(e) => setEditAnonymous(e.target.checked)}
-              className="rounded border-input"
-            />
-            Post anonymously
-          </label>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setEditContent(reply.content);
-                setEditAnonymous(reply.anonymous ?? false);
-                onEndEdit();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type="button" size="sm" onClick={handleSave} disabled={updateReply.isPending}>
-              {updateReply.isPending ? "Saving..." : "Save"}
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+    return <ReplyEditForm reply={reply} postId={postId} onEndEdit={onEndEdit} />;
   }
 
   return (
