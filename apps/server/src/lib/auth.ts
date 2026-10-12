@@ -68,7 +68,11 @@ export const auth = betterAuth({
           clientId: env.AUTH_CLIENT_ID,
           clientSecret: env.AUTH_CLIENT_SECRET,
           discoveryUrl: `${env.AUTH_ISSUER}/.well-known/openid-configuration`,
-          redirectURI: `${env.SERVER_URL}/api/auth/oauth2/callback/keycloak`,
+          // Better Auth skips the provider when discovery fails and these are unset,
+          // which blocks reading a stored access token.
+          authorizationUrl: `${env.AUTH_ISSUER}/protocol/openid-connect/auth`,
+          tokenUrl: `${env.AUTH_ISSUER}/protocol/openid-connect/token`,
+          redirectURI: `${env.SERVER_URL}/api/auth/callback/keycloak`,
           scopes: ["openid", "email", "profile", "offline_access"],
         },
       ],
