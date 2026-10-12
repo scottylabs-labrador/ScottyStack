@@ -5,6 +5,7 @@
     "/apps/web/src/routeTree.gen.ts",
     "/packages/db/drizzle",
     "/.agents/skills",
+    "/.claude/skills",
     // We use syncpack to format package.json since it also orders the scripts alphabetically.
     "**/package.json"
   ],

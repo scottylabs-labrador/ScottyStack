@@ -3,7 +3,7 @@
   "globs": ["**/*.md"],
 
   // Vendor Cursor skills (upstream markdown style)
-  "ignores": [".agents/skills/**"],
+  "ignores": [".agents/skills/**", ".claude/skills/**"],
 
   // Skip gitignore file
   "gitignore": true,
