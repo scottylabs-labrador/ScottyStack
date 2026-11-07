@@ -20,7 +20,7 @@ export default {
     },
     {
       // https://viteplus.dev/guide/local-cli#manual-installation
-      dependencies: ["vite"],
+      dependencies: ["vite", "vitest"],
       dependencyTypes: ["dev"],
       range: "",
     },
