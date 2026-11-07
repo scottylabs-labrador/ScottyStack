@@ -5,7 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   plugins: [
@@ -23,6 +23,15 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
+  },
+  test: {
+    environment: "happy-dom",
+    include: ["tests/**/*.{test,spec}.{ts,tsx}"],
+    setupFiles: ["tests/setup.ts"],
+    fileParallelism: false,
+    env: {
+      VITE_SERVER_URL: "http://localhost:3001",
     },
   },
 });

@@ -35,11 +35,10 @@ jobs:
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
 
-      # To resolve: ✗ Node.js v22.6.0 or higher is needed for a TypeScript config file
       - name: Install Node
         uses: actions/setup-node@v6
         with:
-          node-version: 22.x
+          node-version: latest
 
       - name: Install dependencies
         run: bun install syncpack
@@ -47,8 +46,8 @@ jobs:
       - name: Run Syncpack
         run: bun run syncpack
 
-  bun-quality:
-    name: Bun Quality
+  bun-check:
+    name: Bun Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -56,14 +55,19 @@ jobs:
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: latest
+
       - name: Install dependencies
         run: bun install
 
       - name: Build API
         run: bun run build:api
 
-      - name: Run quality
-        run: bun run quality
+      - name: Run check
+        run: bun --bun vp check
 
   bun-test:
     name: Bun Test
@@ -73,6 +77,11 @@ jobs:
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: latest
 
       - name: Install dependencies
         run: bun install
@@ -91,6 +100,11 @@ jobs:
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: latest
 
       - name: Install dependencies
         run: bun install

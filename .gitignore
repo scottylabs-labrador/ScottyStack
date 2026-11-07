@@ -10,6 +10,9 @@ node_modules/
 .turbo/
 *.tsbuildinfo
 
+# Vite+ generates the hook dispatcher here. Project hooks stay committed.
+.vite-hooks/_
+
 # Build
 dist/
 build/

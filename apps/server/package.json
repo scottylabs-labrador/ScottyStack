@@ -31,8 +31,7 @@
     "dotenv-cli": "^11.0.0",
     "onchange": "^7.1.0",
     "openapi-typescript": "^7.13.0",
-    "supertest": "^7.2.2",
-    "vitest": "^4.0.18"
+    "supertest": "^7.2.2"
   },
   "module": "index.ts",
   "private": true,
@@ -44,7 +43,7 @@
     "openapi:watch": "onchange './build/swagger.yaml' -- bun run openapi",
     "server": "secretspec run -P local -- bun run --preload ./src/instrument.ts --watch src/server.ts",
     "start": "bun dist/server.js",
-    "test": "vitest run",
+    "test": "vp test",
     "tsoa": "tsoa spec-and-routes",
     "tsoa:watch": "onchange 'src/controllers/*.ts' 'tsoa.json' -- bun run tsoa"
   },

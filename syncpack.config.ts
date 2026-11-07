@@ -12,15 +12,15 @@ export default {
   // https://jamiemason.github.io/syncpack/semver-groups/
   semverGroups: [
     {
-      // We would not want new errors to appear in our codebase from unintended Oxlint upgrades.
+      // Vite+ bundles Oxlint. A minor bump can introduce new lint rules.
       // Reference: https://oxc.rs/docs/guide/usage/linter/versioning.html#what-to-expect-from-new-versions
-      dependencies: ["oxlint"],
+      dependencies: ["vite-plus"],
       dependencyTypes: ["dev"],
       range: "~",
     },
     {
-      // "highly recommended to save the exact version" - https://biomejs.dev/internals/versioning/
-      dependencies: ["@biomejs/biome"],
+      // https://viteplus.dev/guide/local-cli#manual-installation
+      dependencies: ["vite"],
       dependencyTypes: ["dev"],
       range: "",
     },
