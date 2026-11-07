@@ -7,6 +7,7 @@ export default defineRailway(() => {
   });
 
   const Postgres = postgres("Postgres");
+  Postgres.deploy = { sleepApplication: true };
   Postgres.networking = { privateNetworkEndpoint: "postgres" };
   const postgresVolume = volume("postgres-volume");
   const _scottystackweb = service("@scottystack/web", {
